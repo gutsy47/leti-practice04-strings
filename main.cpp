@@ -22,8 +22,20 @@ unsigned short getInput(std::string &str) {
     return 0;
 }
 
-int findCharEntrance(char chr, const char * str, unsigned strLen) {
-    for (int i = 0; i < strLen; ++i)
+void getAlphabet(std::string &str, bool withCapital = false, bool withLower = false, bool withNumbers = false) {
+    if (!withCapital && !withLower && !withNumbers) return;
+
+    std::string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    std::string lower = "abcdefghijklmnopqrstuvwxyz";
+    std::string numbers = "0123456789";
+
+    if (withCapital) str += upper;
+    if (withLower) str += lower;
+    if (withNumbers) str += numbers;
+}
+
+int findCharEntrance(char chr, const std::string &str) {
+    for (int i = 0; i < str.length(); ++i)
         if (str[i] == chr) return i;
     return -1;
 }
@@ -54,36 +66,36 @@ void correctPunctuation(std::string &str) {
 
     for (int i = 0; i < length; ++i) {
         // \W[. ! ? !? ... !!! ???]\s[A-Z0-9]
-        if (findCharEntrance(str[i], ".!?", 3) != -1) {
+        if (findCharEntrance(str[i], ".!?") != -1) {
             // Wrong before the symbol
-            if (findCharEntrance(str[i-1], " .?!,([{+-*", 11) != -1) {
+            if (findCharEntrance(str[i-1], " .?!,([{+-*") != -1) {
                 str = str.substr(0, i-1) + str.substr(i, length--);
                 i--;
             }
             if (str[i + 1] == ' ') continue;  // Space after symbol - all is correct
             if ((str[i] == '!' && str[i+1] == '?') || (str[i] == '?' && str[i+1] == '!')) i++;  // ?! or !?
             if (str[i] == str[i+1] && str[i+1] == str[i+2]) i += 2; // Triple
-            for (int j = i+1; findCharEntrance(str[j], ".?!,()[]{}+-*", 13) != -1; ++j) // Another symbols
+            for (int j = i+1; findCharEntrance(str[j], ".?!,()[]{}+-*") != -1; ++j) // Another symbols
                 str = str.substr(0, j) + str.substr(j + 1, length--);
         }
 
         // \W[,)]}]\s\W || \W[([{+-*]\W
-        if (findCharEntrance(str[i], ",+-*()[]{}", 10) != -1) {
+        if (findCharEntrance(str[i], ",+-*()[]{}") != -1) {
             // Space before
             if (str[i-1] == ' ') {
                 str = str.substr(0, i-1) + str.substr(i, length--);
                 i--;
             }
             // Another symbol before the current
-            if (findCharEntrance(str[i-1], " .?!,([{+-*", 11) != -1) {
+            if (findCharEntrance(str[i-1], " .?!,([{+-*") != -1) {
                 str = str.substr(0, i) + str.substr(i+1, length--);
                 i--;
             }
             // Space afterwards
-            if (str[i+1] == ' ' && findCharEntrance(str[i+1], "([{+-*", 6) != -1)
+            if (str[i+1] == ' ' && findCharEntrance(str[i+1], "([{+-*") != -1)
                 str = str.substr(0, i-1) + str.substr(i, length--);
             // Another symbols
-            for (int j = i+1; findCharEntrance(str[j], ".?!,()[]{}+-*", 13) != -1; ++j)
+            for (int j = i+1; findCharEntrance(str[j], ".?!,()[]{}+-*") != -1; ++j)
                 str = str.substr(0, j) + str.substr(j + 1, length--);
         }
     }
@@ -91,39 +103,40 @@ void correctPunctuation(std::string &str) {
 
 void correctLetterCase(std::string &str) {
     unsigned long length = str.length();
-    const char alphabetLower[] = "abcdefghijklmnopqrstuvwxyz";
-    const char alphabetUpper[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    unsigned alpLen = sizeof(alphabetLower)/sizeof(alphabetLower[0]) - 1;
+    std::string alphabetLower, alphabetUpper;
+    getAlphabet(alphabetLower, false, true, false);
+    getAlphabet(alphabetUpper, true, false, false);
 
     // First letter always capital
-    if (findCharEntrance(str[0], alphabetUpper, alpLen) == -1)
-        str[0] = alphabetUpper[findCharEntrance(str[0], alphabetLower, alpLen)];
+    if (findCharEntrance(str[0], alphabetUpper) == -1)
+        str[0] = alphabetUpper[findCharEntrance(str[0], alphabetLower)];
 
     // All not after .?! is lower
     for (int i = 1; i < length; ++i) {
         // Lower
-        if (findCharEntrance(str[i], alphabetUpper, alpLen) != -1)
-            str[i] = alphabetLower[findCharEntrance(str[i], alphabetUpper, alpLen)];
+        if (findCharEntrance(str[i], alphabetUpper) != -1)
+            str[i] = alphabetLower[findCharEntrance(str[i], alphabetUpper)];
 
         // New sentence
-        if (findCharEntrance(str[i-2], ".?!", 3) != -1
-            && findCharEntrance(str[i], alphabetLower, alpLen) != -1) {
-            str[i] = alphabetUpper[findCharEntrance(str[i], alphabetLower, alpLen)];
+        if (findCharEntrance(str[i-2], ".?!") != -1
+            && findCharEntrance(str[i], alphabetLower) != -1) {
+            str[i] = alphabetUpper[findCharEntrance(str[i], alphabetLower)];
         }
     }
 }
 
-void showFilteredByStr(std::string &str, const char * alphabet, unsigned alpLen) {
+void showFilteredByStr(std::string &str, bool withCapital = false, bool withLower = false, bool withNumbers = false) {
     unsigned long length = str.length();
-    const char fullAlphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    unsigned int fullAlpLen = sizeof(fullAlphabet)/sizeof(fullAlphabet[0]);
+    std::string fullAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    std::string alphabet;
+    getAlphabet(alphabet, withCapital, withLower, withNumbers);
 
     // Split to words
     std::string words[100];
     std::string current;
     unsigned short counter = 0;
     for (int i = 0; i < length; ++i) {
-        if (findCharEntrance(str[i], fullAlphabet, fullAlpLen) != -1) {
+        if (findCharEntrance(str[i], fullAlphabet) != -1) {
             current += str[i];
         } else if (!current.empty()){
             words[counter++] = current;
@@ -137,7 +150,7 @@ void showFilteredByStr(std::string &str, const char * alphabet, unsigned alpLen)
         unsigned int wordLen = words[i].size()/sizeof(char);
         bool isWordCorrect = true;
         for (int j = 0; j < wordLen; ++j) {
-            if (findCharEntrance(words[i][j], alphabet, alpLen) == -1) {
+            if (findCharEntrance(words[i][j], alphabet) == -1) {
                 isWordCorrect = false;
                 break;
             }
@@ -181,19 +194,12 @@ int main() {
             // Filter words by letters or numbers presence
             case '2': {
                 std::cout << "  Your input: " << input << std::endl;
-
-                // Alphabets for filters
-                const char lettersOnly[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                const char numbersOnly[] = "0123456789";
-                const char fullAlphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-                // Output
                 std::cout << "Letters only: ";
-                showFilteredByStr(input, lettersOnly, sizeof(lettersOnly)/sizeof(lettersOnly[0])-1);
+                showFilteredByStr(input, true, true, false);
                 std::cout << "Numbers only: ";
-                showFilteredByStr(input, numbersOnly, sizeof(numbersOnly)/sizeof(numbersOnly[0])-1);
+                showFilteredByStr(input, false, false, true);
                 std::cout << "  Everything: ";
-                showFilteredByStr(input, fullAlphabet, sizeof(fullAlphabet)/sizeof(fullAlphabet[0])-1);
+                showFilteredByStr(input, true, true, true);
                 break;
             }
 
