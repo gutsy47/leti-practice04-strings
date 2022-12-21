@@ -113,6 +113,40 @@ void correctLetterCase(std::string &str) {
     }
 }
 
+void showFilteredByStr(std::string &str, const char * alphabet, unsigned alpLen) {
+    unsigned long length = str.length();
+    const char fullAlphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    unsigned int fullAlpLen = sizeof(fullAlphabet)/sizeof(fullAlphabet[0]);
+
+    // Split to words
+    std::string words[100];
+    std::string current;
+    unsigned short counter = 0;
+    for (int i = 0; i < length; ++i) {
+        if (findCharEntrance(str[i], fullAlphabet, fullAlpLen) != -1) {
+            current += str[i];
+        } else if (!current.empty()){
+            words[counter++] = current;
+            current = "";
+        }
+    }
+    words[counter++] = current;
+
+    // Filter
+    for (int i = 0; i < counter; ++i) {
+        unsigned int wordLen = words[i].size()/sizeof(char);
+        bool isWordCorrect = true;
+        for (int j = 0; j < wordLen; ++j) {
+            if (findCharEntrance(words[i][j], alphabet, alpLen) == -1) {
+                isWordCorrect = false;
+                break;
+            }
+        }
+        if (isWordCorrect) std::cout << words[i] << ' ';
+    }
+    std::cout << '\n';
+}
+
 int main() {
     // Init the string
     std::string input;
@@ -144,6 +178,25 @@ int main() {
                 break;
             }
 
+            // Filter words by letters or numbers presence
+            case '2': {
+                std::cout << "  Your input: " << input << std::endl;
+
+                // Alphabets for filters
+                const char lettersOnly[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                const char numbersOnly[] = "0123456789";
+                const char fullAlphabet[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+                // Output
+                std::cout << "Letters only: ";
+                showFilteredByStr(input, lettersOnly, sizeof(lettersOnly)/sizeof(lettersOnly[0])-1);
+                std::cout << "Numbers only: ";
+                showFilteredByStr(input, numbersOnly, sizeof(numbersOnly)/sizeof(numbersOnly[0])-1);
+                std::cout << "  Everything: ";
+                showFilteredByStr(input, fullAlphabet, sizeof(fullAlphabet)/sizeof(fullAlphabet[0])-1);
+                break;
+            }
+
             // Update the user input
             case 'c': {
                 response = getInput(input);
@@ -158,6 +211,7 @@ int main() {
                 std::cout << "h: Help\n";
                 std::cout << std::setw(32) << std::setfill('-') << '\n';
                 std::cout << "1: Correct the text\n";
+                std::cout << "2: Filter & display words by letters or numbers presence\n";
                 std::cout << "c: Change the sentence (or reread from the input.txt file)\n";
                 std::cout << std::setw(32) << std::setfill('-') << '\n';
                 std::cout << "0: Exit\n";
