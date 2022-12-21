@@ -2,12 +2,23 @@
 #include <iomanip>
 #include <fstream>
 
+unsigned short getInput(std::string &str) {
+    // Default input
+    std::cout << "<< Write the sentence (or just press the Enter to apply reading from the input.txt):\n>> ";
+    std::cin.sync();
+    std::getline(std::cin, str);
 
-short int overwriteStringFromFile(const char * filePath, std::string &str) {
-    std::ifstream file(filePath, std::ios::in);
-    if (!file.is_open()) return 1;
-    while (!file.eof()) std::getline(file, str);
-    file.close();
+    // Read from file if input is empty
+    if (str.empty()) {
+        const char* filePath = "C:/dev/university/cpp/practice_4/input.txt";
+        std::ifstream file(filePath, std::ios::in);
+        if (!file.is_open()) {
+            std::cout << "FileNotFoundError: No such file or directory\n";
+            return 1;
+        }
+        while (!file.eof()) std::getline(file, str);
+        file.close();
+    }
     return 0;
 }
 
@@ -103,22 +114,10 @@ void correctLetterCase(std::string &str) {
 }
 
 int main() {
-    setlocale(LC_ALL, "Russian");
-
     // Init the string
     std::string input;
-    std::cout << "<< Write the sentence (or just press the Enter to apply reading from the input.txt):\n>> ";
-    std::getline(std::cin, input);
-
-    // Read from file if input is empty
-    if (input.empty()) {
-        const char* filePath = "C:/dev/university/cpp/practice_4/input.txt";
-        short int response = overwriteStringFromFile(filePath, input);
-        if (response != 0) {
-            std::cout << "FileNotFoundError: No such file or directory\n";
-            return 1;
-        }
-    }
+    unsigned short response = getInput(input);
+    if (response == 1) return 1;
 
     // Main loop
     std::cout << "Enter 'h' to get list of commands\n";
@@ -141,25 +140,14 @@ int main() {
                 removeExtraSpaces(input);
                 correctPunctuation(input);
                 correctLetterCase(input);
-                std::cout << "After: " << input << std::endl;
+                std::cout << " After: " << input << std::endl;
                 break;
             }
 
             // Update the user input
             case 'c': {
-                std::cout << "<< Write the sentence (or just press the Enter to apply reading from the input.txt):\n>> ";
-                std::cin.sync();
-                std::getline(std::cin, input);
-
-                // Read from file if input is empty
-                if (input.empty()) {
-                    const char* filePath = "C:/dev/university/cpp/practice_4/input.txt";
-                    short int response = overwriteStringFromFile(filePath, input);
-                    if (response != 0) {
-                        std::cout << "FileNotFoundError: No such file or directory\n";
-                        return 1;
-                    }
-                }
+                response = getInput(input);
+                if (response == 1) return 1;
                 break;
             }
 
