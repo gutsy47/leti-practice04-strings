@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <string.h>
 
 unsigned short getInput(std::string &str) {
     // Default input
@@ -160,6 +161,13 @@ void showFilteredByStr(std::string &str, bool withCapital = false, bool withLowe
     std::cout << '\n';
 }
 
+void replaceIntsWithChars(std::string &str) {
+    std::string numbers;
+    getAlphabet(numbers, false, false, true);
+    for (char & chr : str)
+        if (findCharEntrance(chr, numbers) != -1) chr += 49;
+}
+
 int main() {
     // Init the string
     std::string input;
@@ -203,6 +211,14 @@ int main() {
                 break;
             }
 
+            // Replace numbers to letters with the same index in the alphabet as number value
+            case '3': {
+                std::cout << "Before: " << input << std::endl;
+                replaceIntsWithChars(input);
+                std::cout << " After: " << input << std::endl;
+                break;
+            }
+
             // Update the user input
             case 'c': {
                 response = getInput(input);
@@ -218,6 +234,7 @@ int main() {
                 std::cout << std::setw(32) << std::setfill('-') << '\n';
                 std::cout << "1: Correct the text\n";
                 std::cout << "2: Filter & display words by letters or numbers presence\n";
+                std::cout << "3: Replace numbers to letters with the same index in the alphabet as number value\n";
                 std::cout << "c: Change the sentence (or reread from the input.txt file)\n";
                 std::cout << std::setw(32) << std::setfill('-') << '\n';
                 std::cout << "0: Exit\n";
