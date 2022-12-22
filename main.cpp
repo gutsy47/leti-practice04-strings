@@ -1,7 +1,6 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <string.h>
 
 unsigned short getInput(std::string &str) {
     // Default input
@@ -168,6 +167,39 @@ void replaceIntsWithChars(std::string &str) {
         if (findCharEntrance(chr, numbers) != -1) chr += 49;
 }
 
+int findLinear(std::string &subStr, std::string &str) {
+    for (int i = 0; str[i]; ++i) {
+        for (int j = 0; str[i+j] == subStr[j]; ++j)
+            if (!subStr[j+1]) return i;
+    }
+    return -1;
+}
+
+int findFast(std::string &subStr, std::string &str) {
+    if (subStr.length() > str.length()) return -1;
+
+    // Init
+    unsigned long prefixesLength = subStr.length() + 1 + str.length();
+    int prefixes[prefixesLength];
+    std::string concatStr = subStr + std::string("$") + str;
+    unsigned long length = concatStr.length();
+
+    // KMP
+    prefixes[0] = 0;
+    for (int i = 1; i < length; ++i) {
+        int j = prefixes[i-1];
+        while ((j > 0) && (concatStr[i] != concatStr[j]))
+            j = prefixes[j-1];
+
+        if (concatStr[i] == concatStr[j])
+            ++j;
+        std::cout << i << concatStr[i] << '\t' << j << concatStr[j] << '\n';
+        prefixes[i] = j;
+        if (j == subStr.length()) return i - 2*j;
+    }
+    return -1;
+}
+
 int main() {
     // Init the string
     std::string input;
@@ -219,6 +251,29 @@ int main() {
                 break;
             }
 
+            // Find substring in string via linear and KMP algorithms
+            case '4': {
+                std::cout << "<< Enter a substring to find:\n>> ";
+                std::string toFind;
+                std::cin.sync();
+                std::getline(std::cin, toFind);
+
+                // Get the answer
+                int answer = findLinear(toFind, input);
+                std::cout << "Linear: " << answer << std::endl;
+                answer = findFast(toFind, input);
+                std::cout << "   KMP: " << answer << std::endl;
+
+                // Check the answer correctness
+                if (answer > -1) {
+                    std::cout << " Check: " << input << '\n';
+                    for (int i = 0; i < answer + 8; ++i) std::cout << ' ';
+                    std::cout << toFind << '\n';
+                }
+
+                break;
+            }
+
             // Update the user input
             case 'c': {
                 response = getInput(input);
@@ -235,6 +290,7 @@ int main() {
                 std::cout << "1: Correct the text\n";
                 std::cout << "2: Filter & display words by letters or numbers presence\n";
                 std::cout << "3: Replace numbers to letters with the same index in the alphabet as number value\n";
+                std::cout << "4: Find substring in string using linear and KMP algorithms\n";
                 std::cout << "c: Change the sentence (or reread from the input.txt file)\n";
                 std::cout << std::setw(32) << std::setfill('-') << '\n';
                 std::cout << "0: Exit\n";
