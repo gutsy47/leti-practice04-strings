@@ -2,4 +2,4 @@
 # Strings
 
 ## About
-Details are described in the report (soon).
+Details are described in the report.
