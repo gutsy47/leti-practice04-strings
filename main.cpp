@@ -167,15 +167,15 @@ void replaceIntsWithChars(std::string &str) {
         if (findCharEntrance(chr, numbers) != -1) chr += 49;
 }
 
-int findLinear(std::string &subStr, std::string &str) {
-    for (int i = 0; str[i]; ++i) {
+int findAllLinear(std::string &subStr, std::string &str, int *result) {
+    int count = 0;
+    for (int i = 0; str[i]; ++i)
         for (int j = 0; str[i+j] == subStr[j]; ++j)
-            if (!subStr[j+1]) return i;
-    }
-    return -1;
+            if (j == subStr.length() - 1) result[count++] = i;
+    return count;
 }
 
-int findFast(std::string &subStr, std::string &str) {
+int findAllFast(std::string &subStr, std::string &str, int *result) {
     if (subStr.length() > str.length()) return -1;
 
     // Init
@@ -186,6 +186,7 @@ int findFast(std::string &subStr, std::string &str) {
 
     // KMP
     prefixes[0] = 0;
+    int count = 0;
     for (int i = 1; i < length; ++i) {
         int j = prefixes[i-1];
         while ((j > 0) && (concatStr[i] != concatStr[j]))
@@ -193,11 +194,10 @@ int findFast(std::string &subStr, std::string &str) {
 
         if (concatStr[i] == concatStr[j])
             ++j;
-        std::cout << i << concatStr[i] << '\t' << j << concatStr[j] << '\n';
         prefixes[i] = j;
-        if (j == subStr.length()) return i - 2*j;
+        if (j == subStr.length()) result[count++] = i - 2*j;
     }
-    return -1;
+    return count;
 }
 
 int main() {
@@ -259,17 +259,21 @@ int main() {
                 std::getline(std::cin, toFind);
 
                 // Get the answer
-                int answer = findLinear(toFind, input);
-                std::cout << "Linear: " << answer << std::endl;
-                answer = findFast(toFind, input);
-                std::cout << "   KMP: " << answer << std::endl;
+                int entrances[10];
+                int count = findAllLinear(toFind, input, entrances);
+                std::cout << "Linear: " << count << " substring entrances" << std::endl;
+                count = findAllFast(toFind, input, entrances);
+                std::cout << "   KMP: " << count << " substring entrances" << std::endl;
 
                 // Check the answer correctness
-                if (answer > -1) {
-                    std::cout << " Check: " << input << '\n';
-                    for (int i = 0; i < answer + 8; ++i) std::cout << ' ';
-                    std::cout << toFind << '\n';
+                std::cout << " Check: " << input << '\n';
+                for (int i = 0; i < 8; ++i) std::cout << ' ';
+                for (int i = 0; i < count; ++i) {
+                    int spacesN = (i == 0) ? entrances[i] : entrances[i] - entrances[i-1] - int(toFind.length());
+                    for (int j = 0; j < spacesN; ++j) std::cout << ' ';
+                    std::cout << toFind;
                 }
+                std::cout << std::endl;
 
                 break;
             }
